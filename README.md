@@ -1,24 +1,43 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This application just uses the `prometheus-client` gem in order to expose the traffic related metrics under the route `/metrics`.
 
-Things you may want to cover:
+### Info
 
-* Ruby version
+Based on [this article](https://www.robustperception.io/instrumenting-a-ruby-on-rails-application-with-prometheus) what we actually needed was:
 
-* System dependencies
+* `Gemfile`
 
-* Configuration
+```
+gem 'prometheus-client'
+```
 
-* Database creation
+* `config.ru`
 
-* Database initialization
+```
+require_relative 'config/environment'
+require 'prometheus/middleware/collector'
+require 'prometheus/middleware/exporter'
 
-* How to run the test suite
+use Prometheus::Middleware::Collector
+use Prometheus::Middleware::Exporter
+run Rails.application
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+The above are what was needed in order to get the metrics.
 
-* Deployment instructions
+### How to build the image
 
-* ...
+```
+docker build -t igiannoulas/rails-with-prometheus-metrics:v0.0.1 .
+docker push igiannoulas/rails-with-prometheus-metrics:v0.0.1
+```
+
+### How to deploy on EYK
+
+```
+eyk apps:create railsprom --no-remote
+eyk config:set PORT=5000 RAILS_LOG_TO_STDOUT=true --app=railsprom
+eyk builds:create igiannoulas/rails-with-prometheus-metrics:v0.0.1 --procfile="{web: bundle exec rails s -b 0.0.0.0 -p 5000}" --app=railsprom
+```
+
