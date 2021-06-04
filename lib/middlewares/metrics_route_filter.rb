@@ -21,6 +21,10 @@ class MetricsRouteFilter
           Rails.logger.debug "=" * 50
           forbidden
         end
+      else
+        Rails.logger.debug "Proceed with request"
+        Rails.logger.debug "=" * 50
+        [@status, @headers, @response]
       end
 
       
